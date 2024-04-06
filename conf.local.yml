@@ -1,0 +1,17 @@
+conf:
+  region: us-east-1
+  log_retention: 5
+  email_sender: michel.en@hotmail.com
+  deployment_bucket: local-stori-account-summarizer-bucket
+  account_dynamodb_table: arn:aws:dynamodb:us-east-1:000000000000:table/local-stori-accounts
+  account_dynamodb_table_name: local-stori-accounts
+  account_transactions_bucket: local-stori-account-transactions-bucket
+  account_transactions_folder: records
+  account_transactions_dynamodb_table: >-
+    arn:aws:dynamodb:us-east-1:000000000000:table/local-stori-account-transactions-table
+  account_transactions_dynamodb_table_name: local-stori-account-transactions-table
+  account_summarize_initiator_topic: arn:aws:sns:us-east-1:000000000000:local-stori-summarize-initiator-topic
+  account_summarize_initiator_queue: arn:aws:sqs:us-east-1:000000000000:local-stori-summarize-initiator-queue
+  account_summarize_finished_topic: arn:aws:sns:us-east-1:000000000000:local-stori-summarize-finished-topic
+  account_summarize_finished_queue: arn:aws:sqs:us-east-1:000000000000:local-stori-summarize-finished-queue
+  endpoint: http://localhost:4566

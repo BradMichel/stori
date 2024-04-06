@@ -1,0 +1,101 @@
+linters-settings:
+  dupl:
+    threshold: 10
+
+  funlen:
+    lines: 90
+    statements: 30
+
+  # Enable all available linters.
+  enable-all: true
+
+  # Set the minimum confidence level for all linters to 0.8.
+  min-confidence: 0.8
+
+  # Set the maximum number of issues to report per linter to 10.
+  max-issues-per-linter: 10
+
+linters:
+  # Enable the Go linter.
+  golint:
+    enabled: true
+
+  # Enable the Go vet linter.
+  govet:
+    enabled: true
+
+  # Enable the unused linter.
+  unused:
+    enabled: true
+
+  # Enable the structcheck linter.
+  structcheck:
+    enabled: true
+
+  # Enable the deadcode linter.
+  deadcode:
+    enabled: true
+
+  # Enable the errcheck linter.
+  errcheck:
+    enabled: true
+
+  # Enable the staticcheck linter.
+  staticcheck:
+    enabled: true
+    # Set the maximum number of issues to report to 100.
+    max-issues: 100
+
+  # Enable the gosec linter.
+  gosec:
+    enabled: true
+
+  # Enable the gocyclo linter.
+  gocyclo:
+    enabled: true
+    # Set the maximum complexity to 15.
+    max-complexity: 15
+    min-complexity: 10
+
+  # Enable the gosimple linter.
+  gosimple:
+    enabled: true
+
+  # Enable the unconvert linter.
+  unconvert:
+    enabled: true
+
+  # Enable the maligned linter.
+  maligned:
+    enabled: true
+
+  # Enable the prealloc linter.
+  prealloc:
+    enabled: true
+
+  # Enable the goconst linter.
+  goconst:
+    enabled: true
+    # Set the minimum length of a constant to 2 characters.
+    min-len: 2
+
+  # Enable the interfacer linter.
+  interfacer:
+    enabled: true
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gomnd
+        - scopelint
+        - funlen
+        - gocyclo
+run:
+  # include test files or not, default is true
+  tests: false
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 1m
+  go: '1.22'
+service:
+  golangci-lint-version: 1.54.x # use the fixed version to not introduce new linters unexpectedly

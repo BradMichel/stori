@@ -1,0 +1,15 @@
+{
+  "name": "stori",
+  "version": "1.0.0",
+  "author": "michel.en@hotmail.com",
+  "description": "The Transaction Summary Reporter",
+  "license": "ISC",
+  "dependencies": {
+    "serverless": "^3.38.0",
+    "serverless-go-build": "^0.0.6"
+  },
+  "devDependencies": {
+    "serverless-go-plugin": "^2.4.0",
+    "serverless-localstack": "^1.2.0"
+  }
+}
