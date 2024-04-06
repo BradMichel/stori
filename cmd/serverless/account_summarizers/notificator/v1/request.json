@@ -1,0 +1,119 @@
+{
+  "type": "object",
+  "properties": {
+    "account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "last_update": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "last_update"
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "months": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "debit": {
+                  "type": "number"
+                },
+                "debit_count": {
+                  "type": "integer"
+                },
+                "credit": {
+                  "type": "number"
+                },
+                "credit_count": {
+                  "type": "integer"
+                },
+                "transactions": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "date",
+                "debit",
+                "debit_count",
+                "credit",
+                "credit_count",
+                "transactions"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "debit": {
+                  "type": "number"
+                },
+                "debit_count": {
+                  "type": "integer"
+                },
+                "credit": {
+                  "type": "integer"
+                },
+                "credit_count": {
+                  "type": "integer"
+                },
+                "transactions": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "date",
+                "debit",
+                "debit_count",
+                "credit",
+                "credit_count",
+                "transactions"
+              ]
+            }
+          ]
+        },
+        "credit_avg": {
+          "type": "number"
+        },
+        "debit_avg": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "account_id",
+        "months",
+        "credit_avg",
+        "debit_avg",
+        "total"
+      ]
+    }
+  },
+  "required": [
+    "account",
+    "summary"
+  ]
+}

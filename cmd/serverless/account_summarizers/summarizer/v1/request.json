@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique identifier for an account"
+    },
+    "email": {
+      "type": "string",
+      "description": "The email address for the account"
+    }
+  },
+  "required": [
+    "id",
+    "email"
+  ]
+}

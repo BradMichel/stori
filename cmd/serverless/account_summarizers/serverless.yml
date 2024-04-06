@@ -1,0 +1,100 @@
+service: account-summarizer
+frameworkVersion: ">=3.0.0 <3.40.0"
+
+plugins:
+  - serverless-localstack
+  - serverless-go-plugin
+
+custom:
+  localstack:
+    stages:
+      - local
+    host: http://localhost
+    edgePort: 4566
+    autostart: true
+  active: ${file(../../../conf.${self:provider.stage}.yml):conf}
+  serviceName: account_summarizer
+  go:
+    supportedRuntimes: [ "provided.al2" ]
+    buildProvidedRuntimeAsBootstrap: true
+
+provider:
+  name: aws
+  architecture: arm64
+  deploymentMethod: direct
+  runtime: provided.al2
+  stage: ${opt:stage, 'dev'}
+  region: ${self:custom.active.region}
+  profile: ${self:custom.active.profile, ''}
+  deploymentBucket:
+    name: ${self:custom.active.deployment_bucket}
+  environment:
+    EMAIL_SENDER: ${self:custom.active.email_sender}
+    ACCOUNT_DYNAMODB_TABLE: ${self:custom.active.account_dynamodb_table_name}
+    SUMMARIZE_INITIATOR_TOPIC: ${self:custom.active.account_summarize_initiator_topic}
+    SUMMARIZE_INITIATOR_QUEUE: ${self:custom.active.account_summarize_initiator_queue}
+    ACCOUNT_TRANSACTIONS_BUCKET: ${self:custom.active.account_transactions_bucket}
+    ACCOUNT_TRANSACTIONS_FOLDER: ${self:custom.active.account_transactions_folder}
+    ACCOUNT_TRANSACTIONS_DYNAMODB_TABLE: ${self:custom.active.account_transactions_dynamodb_table_name}
+    ACCOUNT_SUMMARIZE_FINISHED_TOPIC: ${self:custom.active.account_summarize_finished_topic}
+    ACCOUNT_SUMMARIZE_FINISHED_QUEUE: ${self:custom.active.account_summarize_finished_queue}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - "s3:GetObject"
+          Resource: "arn:aws:s3:::${self:custom.active.account_transactions_bucket}/${self:custom.active.account_transactions_folder}/*"
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:BatchWriteItem
+          Resource:
+            - "arn:aws:dynamodb:${self:custom.active.region}:*:table/${self:custom.active.account_dynamodb_table_name}"
+            - "arn:aws:dynamodb:${self:custom.active.region}:*:table/${self:custom.active.account_transactions_dynamodb_table_name}"
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - "arn:aws:sqs:${self:custom.active.region}:*:${self:custom.active.account_summarize_initiator_queue}"
+            - "arn:aws:sqs:${self:custom.active.region}:*:${self:custom.active.account_summarize_finished_queue}"
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource:
+            - "arn:aws:sns:${self:custom.active.region}:*:${self:custom.active.account_summarize_initiator_topic_name}"
+            - "arn:aws:sns:${self:custom.active.region}:*:${self:custom.active.account_summarize_finished_topic_name}"
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+          Resource: "*"
+
+
+package:
+  individually: true
+
+functions:
+  initiator-v1:
+    handler: initiator/v1/main/main.go
+    memorySize: 512
+    timeout: 30
+    events:
+      - schedule: cron(0 0 1 * ? *)
+  summarizer-v1:
+    handler: summarizer/v1/main/main.go
+    memorySize: 512
+    timeout: 30
+    events:
+      - sqs: ${self:custom.active.account_summarize_initiator_queue}
+  email-notificator-v1:
+    handler: notificator/v1/main/main.go
+    memorySize: 512
+    timeout: 30
+    events:
+      - sqs: ${self:custom.active.account_summarize_finished_queue}
+
