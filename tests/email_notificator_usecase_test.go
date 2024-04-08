@@ -8,6 +8,7 @@ import (
 	"github.com/BradMichel/stori/data"
 
 	"github.com/BradMichel/stori/internal/accounts"
+	"github.com/BradMichel/stori/internal/notifiers/account_summaries"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func TestEmailNotificatorUseCase_Notify(t *testing.T) {
 	mySession := session.Must(session.NewSession(&awsConfig))
 	sesClient := ses.New(mySession)
 	emailSender := ses2.New(sesClient)
-	builder := notifiers.NewAccountSummaryEmailBuilder()
+	builder := account_summaries.NewEmailBuilder()
 	n := notifiers.NewEmailNotificator[summarizers.AccountNotification](config, builder, emailSender)
 	err := n.Notify(ctx, notification)
 	assert.ErrorIs(t, err, nil)

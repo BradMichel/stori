@@ -4,26 +4,13 @@ import * as aws from "@pulumi/aws";
 import { GetProvider, localEndpoint, localStack, Region } from "./local_config";
 import aws_sdk = require("aws-sdk");
 
-const env = pulumi.getStack();
-const provider = GetProvider(env);
-const transactionsFolder = "records";
-
-const emailSender = new aws.ses.EmailIdentity(
-  "Michel Barrera",
-  { email: "michel.en@hotmail.com" },
-  { provider },
-);
-
-const emailReceiver = new aws.ses.EmailIdentity(
-  "Michel",
-  { email: "bradmichel10@gmail.com" },
-  { provider },
-);
+const stack = pulumi.getStack();
+const provider = GetProvider(stack);
 
 const deploymentBucket = new aws.s3.Bucket(
-  `${env}-stori-account-summarizer-bucket`,
+  `${stack}-stori-account-summarizer-bucket`,
   {
-    bucket: `${env}-stori-account-summarizer-bucket`,
+    bucket: `${stack}-stori-account-summarizer-bucket`,
   },
   { provider },
 );
@@ -40,28 +27,18 @@ new aws.s3.BucketPublicAccessBlock(
   { provider },
 );
 
-const accountDynamoDB = new aws.dynamodb.Table(
-  `${env}-stori-accounts`,
-  {
-    name: `${env}-stori-accounts`,
-    attributes: [{ name: "id", type: "S" }],
-    hashKey: "id",
-    readCapacity: 5,
-    writeCapacity: 5,
-  },
-  { provider },
-);
+export const transactionsFolder = "records";
 
-const accountTransactionsBucket = new aws.s3.Bucket(
-  `${env}-stori-account-transactions-bucket`,
+export const accountTransactionsBucket = new aws.s3.Bucket(
+  `${stack}-stori-account-transactions-bucket`,
   {
-    bucket: `${env}-stori-account-transactions-bucket`,
+    bucket: `${stack}-stori-account-transactions-bucket`,
   },
   { provider },
 );
 
 new aws.s3.BucketPublicAccessBlock(
-  `${env}-stori-account-transactions-bucket`,
+  `${stack}-stori-account-transactions-bucket`,
   {
     bucket: accountTransactionsBucket.bucket,
     blockPublicAcls: true,
@@ -72,8 +49,8 @@ new aws.s3.BucketPublicAccessBlock(
   { provider },
 );
 
-const transactionSeed = new aws.s3.BucketObject(
-  `${env}-stori-transaction-seed`,
+export const transactionSeed = new aws.s3.BucketObject(
+  `${stack}-stori-transaction-seed`,
   {
     bucket: accountTransactionsBucket.id,
     source: new pulumi.asset.FileAsset("../data/1_txns.csv"),
@@ -82,10 +59,10 @@ const transactionSeed = new aws.s3.BucketObject(
   { provider },
 );
 
-const accountTransactionsDynamoDB = new aws.dynamodb.Table(
-  `${env}-stori-account-transactions-table`,
+export const accountTransactionsDynamoDB = new aws.dynamodb.Table(
+  `${stack}-stori-account-transactions-table`,
   {
-    name: `${env}-stori-account-transactions-table`,
+    name: `${stack}-stori-account-transactions-table`,
     attributes: [{ name: "id", type: "S" }],
     hashKey: "id",
     readCapacity: 5,
@@ -94,25 +71,37 @@ const accountTransactionsDynamoDB = new aws.dynamodb.Table(
   { provider },
 );
 
-const summarizeInitiatorTopic = new aws.sns.Topic(
-  `${env}-stori-summarize-initiator-topic`,
+export const accountDynamoDB = new aws.dynamodb.Table(
+  `${stack}-stori-accounts`,
   {
-    name: `${env}-stori-summarize-initiator-topic`,
+    name: `${stack}-stori-accounts`,
+    attributes: [{ name: "id", type: "S" }],
+    hashKey: "id",
+    readCapacity: 5,
+    writeCapacity: 5,
   },
   { provider },
 );
 
-const summarizeInitiatorSQS = new aws.sqs.Queue(
-  `${env}-stori-summarize-initiator-queue`,
+export const summarizeInitiatorTopic = new aws.sns.Topic(
+  `${stack}-stori-summarize-initiator-topic`,
   {
-    name: `${env}-stori-summarize-initiator-queue`,
+    name: `${stack}-stori-summarize-initiator-topic`,
+  },
+  { provider },
+);
+
+export const summarizeInitiatorSQS = new aws.sqs.Queue(
+  `${stack}-stori-summarize-initiator-queue`,
+  {
+    name: `${stack}-stori-summarize-initiator-queue`,
     visibilityTimeoutSeconds: 30,
   },
   { provider },
 );
 
-const summarizeInitiatorSQSPolicy = new aws.sqs.QueuePolicy(
-  `${env}-stori-summarize-initiator-queue-policy`,
+export const summarizeInitiatorSQSPolicy = new aws.sqs.QueuePolicy(
+  `${stack}-stori-summarize-initiator-queue-policy`,
   {
     queueUrl: summarizeInitiatorSQS.id,
     policy: {
@@ -136,35 +125,36 @@ const summarizeInitiatorSQSPolicy = new aws.sqs.QueuePolicy(
   { provider },
 );
 
-const summarizeInitiatorTopicSubscription = new aws.sns.TopicSubscription(
-  `${env}-stori-summarize-initiator-topic-subscription`,
+export const summarizeInitiatorTopicSubscription =
+  new aws.sns.TopicSubscription(
+    `${stack}-stori-summarize-initiator-topic-subscription`,
+    {
+      topic: summarizeInitiatorTopic.arn,
+      protocol: "sqs",
+      endpoint: summarizeInitiatorSQS.arn,
+    },
+    { provider },
+  );
+
+export const summarizeFinishedTopic = new aws.sns.Topic(
+  `${stack}-stori-summarize-finished-topic`,
   {
-    topic: summarizeInitiatorTopic.arn,
-    protocol: "sqs",
-    endpoint: summarizeInitiatorSQS.arn,
+    name: `${stack}-stori-summarize-finished-topic`,
   },
   { provider },
 );
 
-const summarizeFinishedTopic = new aws.sns.Topic(
-  `${env}-stori-summarize-finished-topic`,
+export const summarizeFinishedSQS = new aws.sqs.Queue(
+  `${stack}-stori-summarize-finished-queue`,
   {
-    name: `${env}-stori-summarize-finished-topic`,
-  },
-  { provider },
-);
-
-const summarizeFinishedSQS = new aws.sqs.Queue(
-  `${env}-stori-summarize-finished-queue`,
-  {
-    name: `${env}-stori-summarize-finished-queue`,
+    name: `${stack}-stori-summarize-finished-queue`,
     visibilityTimeoutSeconds: 30,
   },
   { provider },
 );
 
-const summarizeFinishedSQSPolicy = new aws.sqs.QueuePolicy(
-  `${env}-stori-summarize-finished-queue-policy`,
+export const summarizeFinishedSQSPolicy = new aws.sqs.QueuePolicy(
+  `${stack}-stori-summarize-finished-queue-policy`,
   {
     queueUrl: summarizeFinishedSQS.id,
     policy: {
@@ -188,8 +178,8 @@ const summarizeFinishedSQSPolicy = new aws.sqs.QueuePolicy(
   { provider },
 );
 
-const summarizeFinishedTopicSubscription = new aws.sns.TopicSubscription(
-  `${env}-stori-summarize-finished-topic-subscription`,
+export const summarizeFinishedTopicSubscription = new aws.sns.TopicSubscription(
+  `${stack}-stori-summarize-finished-topic-subscription`,
   {
     topic: summarizeFinishedTopic.arn,
     protocol: "sqs",
@@ -197,15 +187,6 @@ const summarizeFinishedTopicSubscription = new aws.sns.TopicSubscription(
   },
   { provider },
 );
-
-export const bucketName = deploymentBucket.id;
-export const accountDynamoDBName = accountDynamoDB.id;
-export const transactionsBucketName = accountTransactionsBucket.id;
-export const transactionsDynamoDBName = accountTransactionsDynamoDB.id;
-export const summarizeInitiatorName = summarizeInitiatorTopic.id;
-export const summarizeInitiatorQueueName = summarizeInitiatorSQS.id;
-export const summarizeFinishedName = summarizeFinishedTopic.id;
-export const summarizeFinishedQueueName = summarizeFinishedSQS.id;
 
 accountDynamoDB.name.apply(async (tableName) => {
   const client = new aws_sdk.DynamoDB.DocumentClient({
@@ -220,6 +201,17 @@ accountDynamoDB.name.apply(async (tableName) => {
         {
           id: "1",
           email: "bradmichel10@gmail.com",
+          type: "blue_account",
+        },
+        {
+          id: "1",
+          email: "bradmichel10@gmail.com",
+          type: "black_card",
+        },
+        {
+          id: "1",
+          email: "bradmichel10@gmail.com",
+          type: "green_card",
         },
       ],
     },
@@ -232,6 +224,82 @@ accountDynamoDB.name.apply(async (tableName) => {
     console.error("Unable to add item. Error JSON:", err);
   }
 });
+
+export const emailSender = new aws.ses.EmailIdentity(
+  "Michel Barrera",
+  { email: "michel.en@hotmail.com" },
+  { provider },
+);
+
+export const emailReceiver = new aws.ses.EmailIdentity(
+  "Michel",
+  { email: "bradmichel10@gmail.com" },
+  { provider },
+);
+
+export const templateFolder = "templates";
+
+export const templateBucket = new aws.s3.Bucket(
+  `${stack}-stori-templates-bucket`,
+  {
+    bucket: `${stack}-stori-templates-bucket`,
+  },
+  { provider },
+);
+
+new aws.s3.BucketPublicAccessBlock(
+  `${stack}-stori-templates-bucket`,
+  {
+    bucket: templateBucket.bucket,
+    blockPublicAcls: true,
+    blockPublicPolicy: true,
+    ignorePublicAcls: true,
+    restrictPublicBuckets: true,
+  },
+  { provider },
+);
+
+const blueAccountSummaryKey = "stori_account_summary_template.html";
+export const blueAccountSummaryTemplateSeed = new aws.s3.BucketObject(
+  `${stack}-stori-blue-account-summary-template-seed`,
+  {
+    bucket: templateBucket.id,
+    source: new pulumi.asset.FileAsset("../data/" + blueAccountSummaryKey),
+    key: templateFolder + "/" + blueAccountSummaryKey,
+  },
+  { provider },
+);
+
+const blackAccountSummaryKey = "stori_black_summary_template.html";
+export const blackAccountSummaryTemplateSeed = new aws.s3.BucketObject(
+  `${stack}-stori-black-account-summary-template-seed`,
+  {
+    bucket: templateBucket.id,
+    source: new pulumi.asset.FileAsset("../data/" + blackAccountSummaryKey),
+    key: templateFolder + "/" + blackAccountSummaryKey,
+  },
+  { provider },
+);
+
+const greenAccountSummaryKey = "stori_green_summary_template.html";
+export const greenAccountSummaryTemplateSeed = new aws.s3.BucketObject(
+  `${stack}-stori-green-account-summary-template-seed`,
+  {
+    bucket: templateBucket.id,
+    source: new pulumi.asset.FileAsset("../data/" + greenAccountSummaryKey),
+    key: templateFolder + "/" + greenAccountSummaryKey,
+  },
+  { provider },
+);
+
+export const bucketName = deploymentBucket.id;
+export const accountDynamoDBName = accountDynamoDB.id;
+export const transactionsBucketName = accountTransactionsBucket.id;
+export const transactionsDynamoDBName = accountTransactionsDynamoDB.id;
+export const summarizeInitiatorName = summarizeInitiatorTopic.id;
+export const summarizeInitiatorQueueName = summarizeInitiatorSQS.id;
+export const summarizeFinishedName = summarizeFinishedTopic.id;
+export const summarizeFinishedQueueName = summarizeFinishedSQS.id;
 
 import yaml = require("js-yaml");
 
@@ -253,13 +321,15 @@ pulumi.Output.create({
     account_summarize_finished_topic: summarizeFinishedTopic.arn,
     account_summarize_finished_topic_name: summarizeFinishedTopic.name,
     account_summarize_finished_queue: summarizeFinishedSQS.arn,
+    templates_bucket: templateBucket.id,
+    templates_folder: templateFolder,
   },
 }).apply((config: any) => {
-  if (env == localStack) {
+  if (stack == localStack) {
     config.conf.endpoint = localEndpoint;
   }
   const yamlConfig = yaml.dump(config);
-  fs.writeFile(`../conf.${env}.yml`, yamlConfig, (err) => {
+  fs.writeFile(`../conf.${stack}.yml`, yamlConfig, (err) => {
     if (err) {
       console.log(err);
     } else {

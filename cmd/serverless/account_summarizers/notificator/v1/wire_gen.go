@@ -7,11 +7,16 @@
 package v1
 
 import (
+	"context"
 	"github.com/BradMichel/stori/internal/notifiers"
+	"github.com/BradMichel/stori/internal/notifiers/account_summaries"
 	"github.com/BradMichel/stori/pkg/aws"
+	s3_2 "github.com/BradMichel/stori/pkg/aws/s3"
+	"github.com/BradMichel/stori/pkg/aws/s3/downloader"
 	ses2 "github.com/BradMichel/stori/pkg/email/ses"
 	"github.com/BradMichel/stori/pkg/validators"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/sirupsen/logrus"
 )
@@ -23,21 +28,51 @@ func Initialize() (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	accountSummaryEmailBuilder := notifiers.NewAccountSummaryEmailBuilder()
+	emailBuilderConfig, err := account_summaries.NewEmailBuilderConfig()
+	if err != nil {
+		return nil, err
+	}
+	contextContext := context.Background()
 	v := aws.ConfigProvider()
 	sessionSession, err := session.NewSession(v...)
 	if err != nil {
 		return nil, err
 	}
+	s3S3 := s3.New(sessionSession, v...)
+	config, err := NewTemplatesBucketConfig()
+	if err != nil {
+		return nil, err
+	}
+	manager, err := s3_2.New(s3S3, config)
+	if err != nil {
+		return nil, err
+	}
+	downloaderDownloader, err := downloader.New(manager)
+	if err != nil {
+		return nil, err
+	}
+	blueAccountTemplate, err := account_summaries.NewBlueAccountEmailTemplate(contextContext, downloaderDownloader, emailBuilderConfig)
+	if err != nil {
+		return nil, err
+	}
+	blackCardTemplate, err := account_summaries.NewBlackCardEmailTemplate(contextContext, downloaderDownloader, emailBuilderConfig)
+	if err != nil {
+		return nil, err
+	}
+	greenCardTemplate, err := account_summaries.NewGreenCardEmailTemplate(contextContext, downloaderDownloader, emailBuilderConfig)
+	if err != nil {
+		return nil, err
+	}
+	emailBuilder := account_summaries.NewEmailBuilder(emailBuilderConfig, blueAccountTemplate, blackCardTemplate, greenCardTemplate)
 	sesSES := ses.New(sessionSession, v...)
 	client := ses2.New(sesSES)
-	emailNotificator := NewEmailNotificator(emailNotificatorConfig, accountSummaryEmailBuilder, client)
-	config, err := NewValidatorConfig()
+	emailNotificator := NewEmailNotificator(emailNotificatorConfig, emailBuilder, client)
+	validatorsConfig, err := NewValidatorConfig()
 	if err != nil {
 		return nil, err
 	}
 	fs := ProvideRequestJSON()
-	service, err := validators.New(config, fs)
+	service, err := validators.New(validatorsConfig, fs)
 	if err != nil {
 		return nil, err
 	}

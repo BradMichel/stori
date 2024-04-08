@@ -3,6 +3,8 @@ package v1
 import (
 	"embed"
 
+	s3m "github.com/BradMichel/stori/pkg/aws/s3"
+
 	"github.com/BradMichel/stori/internal/notifiers"
 	"github.com/BradMichel/stori/internal/summarizers"
 	"github.com/BradMichel/stori/pkg/validators"
@@ -27,6 +29,12 @@ func NewEmailNotificator(
 	client notifiers.EmailSender,
 ) EmailNotificator {
 	return notifiers.NewEmailNotificator[summarizers.AccountNotification](config, builder, client)
+}
+
+func NewTemplatesBucketConfig() (s3m.Config, error) {
+	c := s3m.Config{}
+	err := envconfig.Process("templates", &c)
+	return c, err
 }
 
 func ProvideRequestJSON() embed.FS {
