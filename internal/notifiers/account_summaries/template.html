@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Summary</title>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text-center">{{.Headers.CardHeader}} {{.Data.ID}}</h1>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{.Headers.TotalBalance}} {{.Data.TotalBalance}}</h5>
+            <p class="card-text">{{.Headers.AvgDebitAmount}} {{.Data.AverageDebitAmount}}</p>
+            <p class="card-text">{{.Headers.AvgCreditAmount}} {{.Data.AverageCreditAmount}}</p>
+            <h2>{{.Headers.MonthlySummary}}</h2>
+            <div>
+                {{range .Data.Months}}
+                <div>
+                    <h3><strong>{{$.Headers.Month}}</strong> {{.Month}}</h3>
+                    <h3><strong>{{$.Headers.NTransactions}}</strong> {{.NTransactions}}</h3>
+                </div>
+                {{end}}
+            </div>
+            <div class="mt-4">
+                <img data-imagetype="External" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTFvM2QzZjZ0NmR4bzFoNHVicXV3c2tvdmxpbTI3bmk0a25iaTdhNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VXWN05HTttWxoCnXdP/source.gif" width="200" height="110" alt="stori">
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+
 	"github.com/stretchr/testify/mock"
 )
 
@@ -12,9 +13,11 @@ type Mocker struct {
 }
 
 func (m *Mocker) MockError(times int, args ...interface{}) {
-	m.On(errorMethod, fmt.Sprint(args)).Times(times)
+	d := fmt.Sprintf("%v", args)
+	m.On(errorMethod, d).Times(times)
 }
 
 func (m *Mocker) Error(args ...interface{}) {
-	m.Called(fmt.Sprint(args))
+	d := fmt.Sprintf("%v", args)
+	m.Called(d)
 }

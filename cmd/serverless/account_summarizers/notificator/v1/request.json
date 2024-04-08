@@ -16,8 +16,7 @@
       },
       "required": [
         "id",
-        "email",
-        "last_update"
+        "email"
       ]
     },
     "summary": {

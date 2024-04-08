@@ -4,7 +4,8 @@ PROJECT_NAME=$(shell basename "$(PWD)")
 LINT_VERSION = v1.54.2
 
 npmi:
-	npm install
+	make -C cmd/serverless npmi
+	make -C infraestructure npmi
 
 init: npmi
 	make -C infraestructure init STACK=$(STACK)
@@ -24,7 +25,7 @@ remove: npmi
 remove-cmd: npmi
 	make -C cmd remove STACK=$(STACK)
 
-refresh: npmi
+refresh:
 	make -C infraestructure refresh STACK=$(STACK)
 
 test:
@@ -63,7 +64,7 @@ help:
 	@echo "  info STACK=local				Show information about the stack, if STACK=local, show information about the local stack otherwise show information about the cloud stack"
 	@echo "  invoke-initiator STACK=local			Invoke the initiator function, if STACK=local, invoke the local function otherwise invoke the cloud function"
 	@echo "  invoke-summarizer STACK=local			Invoke the summarizer function, if STACK=local, invoke the local function otherwise invoke the cloud function"
-	@echo "  invoke-notificator STACK=local			Invoke the notificator function, if STACK=local, invoke the local function otherwise invoke the cloud function"
-	@echo "  logs-initiator				Show the logs of the initiator function"
-	@echo "  logs-summarizer				Show the logs of the summarizer function"
-	@echo "  logs-notificator				Show the logs of the notificator function"
+	@echo "  invoke-notificator STACK=local		Invoke the notificator function, if STACK=local, invoke the local function otherwise invoke the cloud function"
+	@echo "  logs-initiator STACK=local			Show the logs of the initiator function"
+	@echo "  logs-summarizer STACK=local			Show the logs of the summarizer function"
+	@echo "  logs-notificator STACK=local			Show the logs of the notificator function"

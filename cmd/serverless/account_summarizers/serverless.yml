@@ -38,13 +38,17 @@ provider:
     ACCOUNT_TRANSACTIONS_DYNAMODB_TABLE: ${self:custom.active.account_transactions_dynamodb_table_name}
     ACCOUNT_SUMMARIZE_FINISHED_TOPIC: ${self:custom.active.account_summarize_finished_topic}
     ACCOUNT_SUMMARIZE_FINISHED_QUEUE: ${self:custom.active.account_summarize_finished_queue}
+    TEMPLATES_BUCKET: ${self:custom.active.templates_bucket}
+    TEMPLATES_FOLDER: ${self:custom.active.templates_folder}
   iam:
     role:
       statements:
         - Effect: Allow
           Action:
             - "s3:GetObject"
-          Resource: "arn:aws:s3:::${self:custom.active.account_transactions_bucket}/${self:custom.active.account_transactions_folder}/*"
+          Resource:
+            - "arn:aws:s3:::${self:custom.active.account_transactions_bucket}/${self:custom.active.account_transactions_folder}/*"
+            - "arn:aws:s3:::${self:custom.active.templates_bucket}/${self:custom.active.templates_folder}/*"
         - Effect: Allow
           Action:
             - dynamodb:Query
